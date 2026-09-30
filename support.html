@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support · Noggin</title>
+<meta name="description" content="Help with Noggin: backups, moving to a new device, Anki import, reminders and deleting your data.">
+<meta name="theme-color" content="#FF8A3D">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Noggin">
+<meta property="og:title" content="Support · Noggin">
+<meta property="og:description" content="Help with Noggin: backups, moving to a new device, Anki import, reminders and deleting your data.">
+<meta property="og:image" content="assets/img/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/img/icon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/img/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/nunito-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <nav class="wrap nav" aria-label="Main">
+    <a class="brand" href="index.html"><img src="assets/img/icon-192.png" alt="" width="38" height="38"><span>noggin<i>.</i></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li><li><a href="features.html">Features</a></li><li><a href="index.html#download">Download</a></li><li><a href="privacy.html">Privacy</a></li><li><a href="support.html" aria-current="page">Support</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+
+<article class="wrap doc">
+  <p class="eyebrow">Help</p>
+  <h1>Support</h1>
+  <p class="lede">Stuck, found a bug or have an idea? Email <a href="mailto:lance@landchit.dev">lance@landchit.dev</a>. Say which device you're on and your Noggin version (Settings → About).</p>
+
+  <h2>Common questions</h2>
+  <details><summary>Do I need an account or internet?</summary><p>No. Noggin works entirely offline and has no accounts.</p></details>
+  <details><summary>How do I move my data to a new phone or PC?</summary><p>On the old device, go to <i>Settings → Backup &amp; export → Back up</i> and save the <code>.noggin</code> file somewhere you can reach from the new device. On the new device, open that file with Noggin or use <i>Restore a backup</i>. Restoring replaces what's already there, so Noggin asks you to type RESTORE first.</p></details>
+  <details><summary>What's the difference between a backup and an export?</summary><p>A <b>backup</b> (<code>Noggin backup 2026-09-30.noggin</code>) is your whole library and replaces everything when you restore it. An <b>export</b> (<code>… (Noggin export).noggin</code>) holds the sets or courses you picked, and importing it adds them to what you already have.</p></details>
+  <details><summary>Can I bring my Anki decks?</summary><p>Yes. Pick an <code>.apkg</code> file, choose which fields become the front and back, and check the preview before anything is added.</p></details>
+  <details><summary>How does Import from text work?</summary><p>In <i>Settings → Backup &amp; export → Import from text</i>, copy the instructions into any AI chat along with your notes. Paste the AI's answer back into Noggin. It builds a set and shows any line it couldn't read, with the line number. Check the content before you study from it.</p></details>
+  <details><summary>I'm not getting reminders.</summary><p>Check that notifications are on for Noggin in your device settings. On Android 12 and later, also allow <i>Alarms &amp; reminders</i>. Some phones put apps to sleep to save battery. If yours does, turn battery optimisation off for Noggin.</p></details>
+  <details><summary>Windows says the installer is from an unknown publisher.</summary><p>The installer isn't code-signed yet. If you downloaded it from the official link on this site, choose <i>More info → Run anyway</i>.</p></details>
+
+  <h2 id="delete">Deleting your data</h2>
+  <p>Everything is on your device, and there's no account to close. To remove it all:</p>
+  <ul>
+    <li><b>Android:</b> <i>Settings → Apps → Noggin → Storage → Clear storage</i>, or uninstall Noggin.</li>
+    <li><b>Windows:</b> uninstall from <i>Settings → Apps</i> and answer <i>Yes</i> to <i>Also delete your Noggin data?</i></li>
+  </ul>
+  <p>More details are in the <a href="privacy.html#deleting-your-data">privacy policy</a>.</p>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div>
+      <a class="brand" href="index.html"><img src="assets/img/icon-192.png" alt="" width="38" height="38"><span>noggin<i>.</i></span></a>
+      <p class="muted">An offline study app. Nothing you write leaves your device.</p>
+      <p class="muted">© <span data-year>2026</span> LandChit</p>
+    </div>
+    <ul class="footer-links">
+      <li><a href="features.html">Features</a></li>
+      <li><a href="index.html#download">Download</a></li>
+      <li><a href="privacy.html">Privacy policy</a></li>
+      <li><a href="terms.html">Terms of use</a></li>
+      <li><a href="support.html">Support</a></li>
+      <li><a href="mailto:lance@landchit.dev">lance@landchit.dev</a></li>
+    </ul>
+  </div>
+</footer>
+<script src="assets/site.js" defer></script>
+</body>
+</html>
