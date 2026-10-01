@@ -25,6 +25,8 @@
   --sun: #FFE9A8;
   --hl: rgba(255, 138, 61, .55);
   --on-orange: #2A2135;
+  --band: #2A2135;
+  --on-band: #FFF7EF;
   --shadow: 4px 4px 0 var(--line);
   --radius: 20px;
   --max: 1120px;
@@ -42,6 +44,7 @@
     --orange-ink: #FFAE73;
     --sun: #3A2E1D;
     --hl: rgba(255, 138, 61, .45);
+    --band: #110C17;
     color-scheme: dark;
   }
 }
@@ -148,7 +151,8 @@ p { margin: 0 0 1em; }
 /* Sections */
 section { padding: 72px 0; }
 .section-head { max-width: 40em; margin-bottom: 36px; }
-.band { background: var(--ink); color: var(--bg); }
+/* The band stays dark in both themes, so it can't use --ink/--bg (dark mode swaps them). */
+.band { background: var(--band); color: var(--on-band); }
 .band .lede, .band .muted { color: #CFC8DC; }
 .band .eyebrow { color: var(--yellow); }
 .band a:hover { color: var(--yellow); }
@@ -198,6 +202,52 @@ section { padding: 72px 0; }
 .cta .btn-row { justify-content: center; }
 .cta .lede { margin-left: auto; margin-right: auto; }
 .cta .mascot { width: 110px; margin: 0 auto 12px; }
+
+/* Closed-testing guide: a bottom sheet on phones, a card beside the content on wider screens */
+.guide {
+  width: min(100% - 32px, 560px); max-height: calc(100dvh - 32px); padding: 0;
+  color: var(--ink); background: var(--surface);
+  border: 3px solid var(--line); border-radius: 26px; box-shadow: 8px 8px 0 var(--orange);
+  overflow: auto; overscroll-behavior: contain;
+}
+.guide::backdrop { background: rgba(28, 22, 36, .55); backdrop-filter: blur(3px); }
+.guide[open] { animation: guide-in .28s cubic-bezier(.2, .9, .3, 1.2); }
+@keyframes guide-in { from { opacity: 0; transform: translateY(24px) rotate(-1.5deg); } }
+@media (max-width: 599px) {
+  .guide { width: 100%; max-width: none; margin: auto 0 0; border-radius: 26px 26px 0 0; border-bottom: 0; box-shadow: 0 -6px 0 var(--orange); max-height: 92dvh; }
+  @keyframes guide-in { from { transform: translateY(100%); } }
+}
+@media (prefers-reduced-motion: reduce) { .guide[open] { animation: none; } }
+.guide-body { padding: 22px 22px 26px; }
+@media (min-width: 600px) { .guide-body { padding: 28px 32px 32px; } }
+.guide-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.guide-top .eyebrow { margin: 0; }
+.guide-close { flex: none; width: 40px; height: 40px; display: grid; place-items: center; font: inherit; font-size: 1.6rem; font-weight: 900; line-height: 1; color: var(--ink); background: var(--surface-2); border: 2px solid var(--line); border-radius: 12px; cursor: pointer; }
+.guide-close:hover { background: var(--sun); }
+.guide h2 { font-size: clamp(1.6rem, 5vw, 2.1rem); margin: 14px 0 8px; }
+.guide .muted { color: var(--muted); }
+
+.steps { list-style: none; padding: 0; margin: 22px 0 0; }
+.step { position: relative; display: grid; grid-template-columns: 44px 1fr; gap: 16px; padding-bottom: 22px; transition: opacity .2s ease; }
+.step:last-child { padding-bottom: 0; }
+.step:not(:last-child)::before { content: ''; position: absolute; left: 21px; top: 48px; bottom: 4px; border-left: 2.5px dashed color-mix(in srgb, var(--line) 35%, transparent); }
+.step h3 { margin: 8px 0 4px; }
+.step p { margin-bottom: 12px; }
+.step-num { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 99px; border: 2.5px solid var(--line); background: var(--yellow); color: #2A2135; font-weight: 1000; font-size: 1.15rem; box-shadow: 2px 2px 0 var(--line); }
+.step-num svg { display: none; width: 22px; height: 22px; }
+.step.done .step-num { background: var(--green); }
+.step.done .step-num span { display: none; }
+.step.done .step-num svg { display: block; }
+.step[aria-disabled] { opacity: .45; }
+.step[aria-disabled] .step-num { background: var(--surface-2); box-shadow: none; }
+.step[aria-disabled] .btn { pointer-events: none; }
+.step-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.btn-sm { min-height: 46px; padding: 9px 16px; border-radius: 14px; gap: 8px; box-shadow: 3px 3px 0 var(--line); }
+.btn-sm svg { width: 18px; height: 18px; }
+.link-btn { font: inherit; font-weight: 800; color: var(--ink); background: none; border: 0; padding: 6px 2px; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; cursor: pointer; }
+.link-btn:hover { color: var(--orange-ink); }
+.guide-note { margin: 16px 0 0; padding: 12px 14px; font-size: .92rem; background: var(--sun); border: 2px dashed var(--line); border-radius: 14px; }
+.guide-note b { font-weight: 900; }
 
 /* Legal pages */
 .doc { max-width: 760px; padding-top: 40px; padding-bottom: 72px; }
