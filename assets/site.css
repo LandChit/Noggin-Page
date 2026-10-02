@@ -275,3 +275,9 @@ details[open] summary { margin-bottom: 8px; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 8px 22px; list-style: none; padding: 0; margin: 0; }
 .footer-links a { font-weight: 800; }
 .site-footer .muted { color: var(--muted); margin: 8px 0 0; }
+
+/* What's new: the latest release's notes, filled in by site.js; hidden until then. */
+.whats-new { margin-top: 24px; max-width: 520px; }
+.whats-new[hidden] { display: none; }
+.whats-new h3 { margin: 0 0 10px; }
+.whats-new ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }

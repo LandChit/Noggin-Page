@@ -54,15 +54,19 @@ const TESTING_GROUP_URL = 'https://groups.google.com/g/noggin-testing';
     });
   }
 
-  // Windows
+  // Windows, and the hero's What's new box: both come from the latest release,
+  // fetched once.
   const winButtons = document.querySelectorAll('[data-download="windows"]');
+  const whatsNew = document.querySelector('[data-whats-new]');
   const releasesPage = `https://github.com/${WINDOWS_REPO}/releases/latest`;
   winButtons.forEach((btn) => { btn.href = releasesPage; });
-  if (winButtons.length && window.fetch) {
+  if ((winButtons.length || whatsNew) && window.fetch) {
     fetch(`https://api.github.com/repos/${WINDOWS_REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } })
       .then((r) => (r.ok ? r.json() : null))
       .then((release) => {
-        if (!release || !Array.isArray(release.assets)) return;
+        if (!release) return;
+        showWhatsNew(release);
+        if (!Array.isArray(release.assets)) return;
         const exe = release.assets.find((a) => /\.exe$/i.test(a.name));
         if (!exe) return;
         winButtons.forEach((btn) => {
@@ -71,7 +75,29 @@ const TESTING_GROUP_URL = 'https://groups.google.com/g/noggin-testing';
           if (sub && release.tag_name) sub.textContent = `Windows · ${release.tag_name}`;
         });
       })
-      .catch(() => { /* the releases page link already works */ });
+      .catch(() => { /* the releases page link already works, and the box stays hidden */ });
+  }
+
+  // The release notes are the same "• " bullets as the app's What's new. Only
+  // bullet lines are shown, as text, so nothing in a release body can inject
+  // markup. With no bullets the box stays hidden.
+  function showWhatsNew(release) {
+    if (!whatsNew || typeof release.body !== 'string') return;
+    const items = release.body.split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => /^[•*-]\s+/.test(line))
+      .map((line) => line.replace(/^[•*-]\s+/, ''))
+      .filter(Boolean);
+    if (!items.length) return;
+    const list = whatsNew.querySelector('ul');
+    items.forEach((text) => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      list.appendChild(li);
+    });
+    const version = whatsNew.querySelector('[data-whats-new-version]');
+    if (version && release.tag_name) version.textContent = ` in ${release.tag_name}`;
+    whatsNew.hidden = false;
   }
 
   // Screenshot tabs
