@@ -16,6 +16,11 @@ const WINDOWS_REPO = 'LandChit/Noggin-Page';
 const PLAY_URL = 'https://play.google.com/store/apps/details?id=dev.landchit.noggin';
 const TESTING_GROUP_URL = 'https://groups.google.com/g/noggin-testing';
 
+// Shared by the download guides. Declared up here because the code below runs
+// as soon as the file loads, before anything further down is initialised.
+const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const ARROW_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>';
+
 (function () {
   const header = document.querySelector('.site-header');
   if (header) {
@@ -60,6 +65,25 @@ const TESTING_GROUP_URL = 'https://groups.google.com/g/noggin-testing';
   const whatsNew = document.querySelector('[data-whats-new]');
   const releasesPage = `https://github.com/${WINDOWS_REPO}/releases/latest`;
   winButtons.forEach((btn) => { btn.href = releasesPage; });
+
+  // The installer isn't code-signed, so Windows warns about it. A click still
+  // follows the link: the .exe downloads (the page stays put), or the releases
+  // page opens in a new tab. The guide opens alongside to explain the warning.
+  const winGuide = winButtons.length && window.HTMLDialogElement ? buildWindowsGuide(releasesPage) : null;
+  if (winGuide) {
+    winButtons.forEach((btn) => {
+      btn.setAttribute('aria-haspopup', 'dialog');
+      btn.addEventListener('click', (e) => {
+        const isExe = /\.exe$/i.test(btn.href);
+        if (!isExe) {
+          e.preventDefault();
+          window.open(btn.href, '_blank', 'noopener');
+        }
+        winGuide.open(isExe);
+      });
+    });
+  }
+
   if ((winButtons.length || whatsNew) && window.fetch) {
     fetch(`https://api.github.com/repos/${WINDOWS_REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } })
       .then((r) => (r.ok ? r.json() : null))
@@ -74,6 +98,7 @@ const TESTING_GROUP_URL = 'https://groups.google.com/g/noggin-testing';
           const sub = btn.querySelector('[data-version]');
           if (sub && release.tag_name) sub.textContent = `Windows · ${release.tag_name}`;
         });
+        if (winGuide) winGuide.setDownload(exe.browser_download_url, exe.name);
       })
       .catch(() => { /* the releases page link already works, and the box stays hidden */ });
   }
@@ -121,20 +146,33 @@ const TESTING_GROUP_URL = 'https://groups.google.com/g/noggin-testing';
   });
 })();
 
+// The guides' shared shell: a modal dialog with a close button that also closes
+// on a backdrop click. `id` names the dialog's title element.
+function makeGuideDialog(id, eyebrow, content) {
+  const dialog = document.createElement('dialog');
+  dialog.className = 'guide';
+  dialog.setAttribute('aria-labelledby', id);
+  dialog.innerHTML = `<div class="guide-body">
+    <div class="guide-top">
+      <p class="eyebrow">${eyebrow}</p>
+      <button class="guide-close" type="button" aria-label="Close">×</button>
+    </div>
+    ${content}
+  </div>`;
+  document.body.appendChild(dialog);
+  dialog.querySelector('.guide-close').addEventListener('click', () => dialog.close());
+  // The dialog has no padding of its own, so a click that lands on it is on the backdrop.
+  dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+  return dialog;
+}
+
 // The closed-testing guide. Step 2 stays dimmed until step 1 is done, so the
 // order is obvious: Play says "not found" to anyone who isn't in the group yet.
 function buildTestingGuide() {
-  const check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-  const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>';
-  const dialog = document.createElement('dialog');
-  dialog.className = 'guide';
-  dialog.setAttribute('aria-labelledby', 'guide-title');
-  dialog.innerHTML = `<div class="guide-body">
-    <div class="guide-top">
-      <p class="eyebrow">Android · closed test</p>
-      <button class="guide-close" type="button" aria-label="Close">×</button>
-    </div>
-    <h2 id="guide-title">Two steps to get <span class="hl">Noggin</span> on Android</h2>
+  const check = CHECK_ICON;
+  const arrow = ARROW_ICON;
+  const dialog = makeGuideDialog('android-guide-title', 'Android · closed test', `
+    <h2 id="android-guide-title">Two steps to get <span class="hl">Noggin</span> on Android</h2>
     <p class="muted">Noggin is in closed testing on Google Play. Anyone can join, and it's free.</p>
     <ol class="steps">
       <li class="step" data-step="1">
@@ -159,9 +197,7 @@ function buildTestingGuide() {
           <p class="guide-note"><b>Says "not found"?</b> Joining can take a while to reach Google Play. Wait a few minutes, then open the link again. Check that you're signed in to Play with the account you joined with.</p>
         </div>
       </li>
-    </ol>
-  </div>`;
-  document.body.appendChild(dialog);
+    </ol>`);
 
   const step1 = dialog.querySelector('[data-step="1"]');
   const step2 = dialog.querySelector('[data-step="2"]');
@@ -190,15 +226,84 @@ function buildTestingGuide() {
     play.focus();
   });
   play.addEventListener('click', (e) => { if (step2.hasAttribute('aria-disabled')) e.preventDefault(); });
-  dialog.querySelector('.guide-close').addEventListener('click', () => dialog.close());
-  // The dialog has no padding of its own, so a click that lands on it is on the backdrop.
-  dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
 
   return {
     open: () => {
       dialog.showModal();
       // Start on the next thing to do rather than the close button.
       (step2.hasAttribute('aria-disabled') ? join : play).focus();
+    },
+  };
+}
+
+// The Windows guide: how to get the unsigned installer past the browser's
+// download check and SmartScreen's "Windows protected your PC". The mock-ups
+// copy what Windows shows, so the student knows which link to press.
+function buildWindowsGuide(releasesPage) {
+  const dialog = makeGuideDialog('windows-guide-title', 'Windows · installer', `
+    <h2 id="windows-guide-title">Installing <span class="hl">Noggin</span> on Windows</h2>
+    <p class="muted">The installer isn't code-signed yet, so Windows doesn't know who made it and warns you before it runs. That's expected. Only run it if it came from this site.</p>
+    <ol class="steps">
+      <li class="step" data-step="1">
+        <span class="step-num"><span>1</span>${CHECK_ICON}</span>
+        <div>
+          <h3>Download the installer</h3>
+          <p class="muted" data-download-status>Get <b data-exe-name>Noggin-Setup.exe</b> from the latest release.</p>
+          <div class="step-actions">
+            <a class="btn btn-sm" href="${releasesPage}" target="_blank" rel="noopener" data-exe>Download ${ARROW_ICON}</a>
+          </div>
+          <p class="guide-note"><b>Browser says it "isn't commonly downloaded"?</b> In Edge, open the <b>⋯</b> menu on the download, choose <b>Keep</b>, then <b>Show more → Keep anyway</b>. In Chrome, choose <b>Keep</b>.</p>
+        </div>
+      </li>
+      <li class="step" data-step="2">
+        <span class="step-num"><span>2</span>${CHECK_ICON}</span>
+        <div>
+          <h3>Open it, then choose <i>More info</i></h3>
+          <p class="muted">Windows shows a blue <b>Windows protected your PC</b> box with only a <b>Don't run</b> button. Click the <b>More info</b> link under the message.</p>
+          <div class="smartscreen" aria-hidden="true">
+            <p class="ss-title">Windows protected your PC</p>
+            <p>Microsoft Defender SmartScreen prevented an unrecognised app from starting. Running this app might put your PC at risk.</p>
+            <p><span class="ss-link ss-target">More info</span></p>
+            <div class="ss-buttons"><span class="ss-btn">Don't run</span></div>
+          </div>
+        </div>
+      </li>
+      <li class="step" data-step="3">
+        <span class="step-num"><span>3</span>${CHECK_ICON}</span>
+        <div>
+          <h3>Choose <i>Run anyway</i></h3>
+          <p class="muted">The box now names the app and shows <b>Publisher: Unknown publisher</b>. Click <b>Run anyway</b>, and the installer opens. It doesn't need admin rights.</p>
+          <div class="smartscreen" aria-hidden="true">
+            <p class="ss-title">Windows protected your PC</p>
+            <p>App: <span data-exe-name>Noggin-Setup.exe</span><br>Publisher: Unknown publisher</p>
+            <div class="ss-buttons"><span class="ss-btn ss-target">Run anyway</span><span class="ss-btn">Don't run</span></div>
+          </div>
+        </div>
+      </li>
+    </ol>`);
+
+  const step1 = dialog.querySelector('[data-step="1"]');
+  const exe = dialog.querySelector('[data-exe]');
+  const status = dialog.querySelector('[data-download-status]');
+  const setDownloading = (downloading) => {
+    step1.classList.toggle('done', downloading);
+    exe.classList.toggle('btn-primary', !downloading);
+    exe.firstChild.textContent = downloading ? 'Download again ' : 'Download ';
+    if (downloading) status.innerHTML = 'Your download has started. If it didn\'t, use the button below.';
+  };
+  exe.addEventListener('click', () => setDownloading(true));
+
+  return {
+    // Once the release's .exe is known, the guide's button fetches it directly.
+    setDownload: (url, name) => {
+      exe.href = url;
+      exe.removeAttribute('target');
+      dialog.querySelectorAll('[data-exe-name]').forEach((el) => { el.textContent = name; });
+    },
+    open: (started) => {
+      if (started) setDownloading(true);
+      dialog.showModal();
+      exe.focus();
     },
   };
 }
