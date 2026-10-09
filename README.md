@@ -13,8 +13,11 @@
   <a href="https://github.com/LandChit/Noggin-Page/releases/latest"><b>⬇ Download the latest version for Windows</b></a>
   &nbsp;·&nbsp;
   Android: coming soon to Google Play
+  <br>
+  <a href="https://noggin.landchit.dev"><b>Test Android Early</b></a>
 </p>
 
+> Android Join Test Guide. Press "**Join the Closed Test**" on the site, join the Google Group, and install from the **link provided**.
 ---
 
 ## What is Noggin?
