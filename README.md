@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/LandChit/Noggin-Page/releases/latest"><b>⬇ Download the latest version for Windows</b></a>
+  <a href="https://github.com/LandChit/Noggin-Page/releases/latest"><b>⬇ Download the latest version for Windows or Linux</b></a>
   &nbsp;·&nbsp;
   Android: coming soon to Google Play
   <br>
@@ -87,8 +87,11 @@ Exam in five days? Sorted.
 | Platform | Get it | Needs |
 |---|---|---|
 | **Windows** | [Latest release](https://github.com/LandChit/Noggin-Page/releases/latest) (download the `.exe`) | Windows 10 or 11, 64-bit |
+| **Linux** | [Latest release](https://github.com/LandChit/Noggin-Page/releases/latest) (download the `.AppImage`) | 64-bit Linux from 2022 on (Ubuntu 22.04+, Mint 21+, Debian 12+, Fedora, Arch) |
 | **Android** | Coming soon to Google Play | Android 7.0 or later, phone or tablet |
 
 The Windows installer doesn't need admin rights, and after installing you can open `.noggin` files by double-clicking them.
+
+On Linux there's nothing to install: make the AppImage executable (`chmod +x Noggin-*.AppImage`, or *Properties → Permissions*) and double-click it. Your data lives in `~/.local/share/dev.landchit.noggin`, so replacing the AppImage with a newer one keeps everything. To update, put the new AppImage in the same folder as the old one and open it: Noggin offers to take over your app menu entry and delete the old file. Gear Lever and AppImageUpdate can also update it in place; see [Updating Noggin on Linux](https://noggin.landchit.dev/support.html#updating-linux).
 
 Noggin is free.

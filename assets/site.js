@@ -1,9 +1,10 @@
-// The two download links live here, in one place.
+// The download links live here, in one place.
 //
-// WINDOWS_REPO: the repository whose latest GitHub release holds the Windows
-// installer (Noggin-Setup-<version>.exe). The buttons link to its
-// /releases/latest page. When the repository is public, the script also asks
-// GitHub's API for that release and points the buttons straight at the .exe.
+// RELEASE_REPO: the repository whose latest GitHub release holds the Windows
+// installer (Noggin-Setup-<version>.exe) and the Linux AppImage
+// (Noggin-<version>-x86_64.AppImage). The buttons link to its /releases/latest
+// page. When the repository is public, the script also asks GitHub's API for
+// that release and points each button straight at its file.
 //
 // PLAY_URL: the Play Store listing.
 //
@@ -12,7 +13,7 @@
 // two-step guide (join the group, then open the listing) instead of linking
 // straight to Play. Without JavaScript the buttons link to the group. Set it to
 // '' once the app is public and the buttons go straight to PLAY_URL.
-const WINDOWS_REPO = 'LandChit/Noggin-Page';
+const RELEASE_REPO = 'LandChit/Noggin-Page';
 const PLAY_URL = 'https://play.google.com/store/apps/details?id=dev.landchit.noggin';
 const TESTING_GROUP_URL = 'https://groups.google.com/g/noggin-testing';
 
@@ -59,48 +60,72 @@ const ARROW_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
     });
   }
 
-  // Windows, and the hero's What's new box: both come from the latest release,
-  // fetched once.
-  const winButtons = document.querySelectorAll('[data-download="windows"]');
-  const whatsNew = document.querySelector('[data-whats-new]');
-  const releasesPage = `https://github.com/${WINDOWS_REPO}/releases/latest`;
-  winButtons.forEach((btn) => { btn.href = releasesPage; });
-
-  // The installer isn't code-signed, so Windows warns about it. A click still
-  // follows the link: the .exe downloads (the page stays put), or the releases
-  // page opens in a new tab. The guide opens alongside to explain the warning.
-  const winGuide = winButtons.length && window.HTMLDialogElement ? buildWindowsGuide(releasesPage) : null;
-  if (winGuide) {
-    winButtons.forEach((btn) => {
-      btn.setAttribute('aria-haspopup', 'dialog');
-      btn.addEventListener('click', (e) => {
-        const isExe = /\.exe$/i.test(btn.href);
-        if (!isExe) {
-          e.preventDefault();
-          window.open(btn.href, '_blank', 'noopener');
-        }
-        winGuide.open(isExe);
-      });
+  // Linux visitors get the AppImage as the main button. Phones are left alone:
+  // Android's user agent says Linux too.
+  const ua = navigator.userAgent;
+  if (/Linux/.test(ua) && !/Android/.test(ua)) {
+    document.querySelectorAll('.btn-row').forEach((row) => {
+      const win = row.querySelector('[data-download="windows"]');
+      const linux = row.querySelector('[data-download="linux"]');
+      if (!win || !linux) return;
+      win.classList.remove('btn-primary');
+      linux.classList.add('btn-primary');
+      row.insertBefore(linux, win);
     });
   }
 
-  if ((winButtons.length || whatsNew) && window.fetch) {
-    fetch(`https://api.github.com/repos/${WINDOWS_REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } })
+  // Windows, Linux, and the hero's What's new box: all come from the latest
+  // release, fetched once.
+  const whatsNew = document.querySelector('[data-whats-new]');
+  const releasesPage = `https://github.com/${RELEASE_REPO}/releases/latest`;
+  const desktops = [
+    { key: 'windows', label: 'Windows', file: /\.exe$/i, guide: buildWindowsGuide },
+    // The .zsync beside the AppImage is for updaters; only the guide links it.
+    { key: 'linux', label: 'Linux', file: /\.AppImage$/i, extra: /\.AppImage\.zsync$/i, guide: buildLinuxGuide },
+  ].map((d) => {
+    const buttons = document.querySelectorAll(`[data-download="${d.key}"]`);
+    buttons.forEach((btn) => { btn.href = releasesPage; });
+    // Neither file is signed, so each system warns about it. A click still
+    // follows the link: the file downloads (the page stays put), or the
+    // releases page opens in a new tab. The guide opens alongside to explain.
+    const guide = buttons.length && window.HTMLDialogElement ? d.guide(releasesPage) : null;
+    if (guide) {
+      buttons.forEach((btn) => {
+        btn.setAttribute('aria-haspopup', 'dialog');
+        btn.addEventListener('click', (e) => {
+          const direct = d.file.test(btn.href);
+          if (!direct) {
+            e.preventDefault();
+            window.open(btn.href, '_blank', 'noopener');
+          }
+          guide.open(direct);
+        });
+      });
+    }
+    return { ...d, buttons, guide };
+  });
+
+  if ((desktops.some((d) => d.buttons.length) || whatsNew) && window.fetch) {
+    fetch(`https://api.github.com/repos/${RELEASE_REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } })
       .then((r) => (r.ok ? r.json() : null))
       .then((release) => {
         if (!release) return;
         showWhatsNew(release);
         if (!Array.isArray(release.assets)) return;
-        const exe = release.assets.find((a) => /\.exe$/i.test(a.name));
-        if (!exe) return;
-        winButtons.forEach((btn) => {
-          btn.href = exe.browser_download_url;
-          const sub = btn.querySelector('[data-version]');
-          if (sub && release.tag_name) sub.textContent = `Windows · ${release.tag_name}`;
+        desktops.forEach((d) => {
+          const asset = release.assets.find((a) => d.file.test(a.name));
+          if (!asset) return;
+          d.buttons.forEach((btn) => {
+            btn.href = asset.browser_download_url;
+            const sub = btn.querySelector('[data-version]');
+            if (sub && release.tag_name) sub.textContent = `${d.label} · ${release.tag_name}`;
+          });
+          if (d.guide) d.guide.setDownload(asset.browser_download_url, asset.name);
+          const extra = d.extra && release.assets.find((a) => d.extra.test(a.name));
+          if (extra && d.guide && d.guide.setExtra) d.guide.setExtra(extra.browser_download_url, extra.name);
         });
-        if (winGuide) winGuide.setDownload(exe.browser_download_url, exe.name);
       })
-      .catch(() => { /* the releases page link already works, and the box stays hidden */ });
+      .catch(() => { /* the releases page links already work, and the box stays hidden */ });
   }
 
   // The release notes are the same "• " bullets as the app's What's new. Only
@@ -248,9 +273,9 @@ function buildWindowsGuide(releasesPage) {
         <span class="step-num"><span>1</span>${CHECK_ICON}</span>
         <div>
           <h3>Download the installer</h3>
-          <p class="muted" data-download-status>Get <b data-exe-name>Noggin-Setup.exe</b> from the latest release.</p>
+          <p class="muted" data-download-status>Get <b data-file-name>Noggin-Setup.exe</b> from the latest release.</p>
           <div class="step-actions">
-            <a class="btn btn-sm" href="${releasesPage}" target="_blank" rel="noopener" data-exe>Download ${ARROW_ICON}</a>
+            <a class="btn btn-sm" href="${releasesPage}" target="_blank" rel="noopener" data-file>Download ${ARROW_ICON}</a>
           </div>
           <p class="guide-note"><b>Browser says it "isn't commonly downloaded"?</b> In Edge, open the <b>⋯</b> menu on the download, choose <b>Keep</b>, then <b>Show more → Keep anyway</b>. In Chrome, choose <b>Keep</b>.</p>
         </div>
@@ -275,35 +300,87 @@ function buildWindowsGuide(releasesPage) {
           <p class="muted">The box now names the app and shows <b>Publisher: Unknown publisher</b>. Click <b>Run anyway</b>, and the installer opens. It doesn't need admin rights.</p>
           <div class="smartscreen" aria-hidden="true">
             <p class="ss-title">Windows protected your PC</p>
-            <p>App: <span data-exe-name>Noggin-Setup.exe</span><br>Publisher: Unknown publisher</p>
+            <p>App: <span data-file-name>Noggin-Setup.exe</span><br>Publisher: Unknown publisher</p>
             <div class="ss-buttons"><span class="ss-btn ss-target">Run anyway</span><span class="ss-btn">Don't run</span></div>
           </div>
         </div>
       </li>
     </ol>`);
 
+  return downloadGuide(dialog);
+}
+
+// The Linux guide: an AppImage needs no installing, only permission to run.
+function buildLinuxGuide(releasesPage) {
+  const dialog = makeGuideDialog('linux-guide-title', 'Linux · AppImage', `
+    <h2 id="linux-guide-title">Running <span class="hl">Noggin</span> on Linux</h2>
+    <p class="muted">Noggin for Linux is one AppImage file, with nothing to install. Your notes are kept in <code>~/.local/share/dev.landchit.noggin</code>, not in the file, so a newer AppImage picks up where the old one left off.</p>
+    <ol class="steps">
+      <li class="step" data-step="1">
+        <span class="step-num"><span>1</span>${CHECK_ICON}</span>
+        <div>
+          <h3>Download the AppImage</h3>
+          <p class="muted" data-download-status>Get <b data-file-name>Noggin-x86_64.AppImage</b> from the latest release.</p>
+          <div class="step-actions">
+            <a class="btn btn-sm" href="${releasesPage}" target="_blank" rel="noopener" data-file>Download ${ARROW_ICON}</a>
+          </div>
+        </div>
+      </li>
+      <li class="step" data-step="2">
+        <span class="step-num"><span>2</span>${CHECK_ICON}</span>
+        <div>
+          <h3>Allow it to run</h3>
+          <p class="muted">Right-click the file, open <b>Properties → Permissions</b> and tick <b>Allow executing file as program</b>. Or, in a terminal: <code>chmod +x Noggin-*.AppImage</code></p>
+        </div>
+      </li>
+      <li class="step" data-step="3">
+        <span class="step-num"><span>3</span>${CHECK_ICON}</span>
+        <div>
+          <h3>Double-click it</h3>
+          <p class="muted">Noggin opens in its own window. Keep the file somewhere it can stay, such as an <b>Applications</b> folder in your home folder.</p>
+          <p class="guide-note"><b>Nothing happens on Ubuntu or Mint?</b> AppImages need FUSE 2. Run <code>sudo apt install libfuse2</code> (on Ubuntu 24.04, <code>libfuse2t64</code>), then try again.</p>
+          <p class="guide-note"><b>Updating later?</b> Put the new AppImage in the same folder as this one and open it; Noggin takes it from there. See <a href="support.html#updating-linux">Updating Noggin on Linux</a>.</p>
+          <p class="guide-note"><b>Using Gear Lever or AppImageUpdate?</b> They fetch the update file themselves, so you don't need it. To download it anyway: <a href="${releasesPage}" target="_blank" rel="noopener" data-zsync><span data-zsync-name>Noggin-x86_64.AppImage.zsync</span></a>.</p>
+        </div>
+      </li>
+    </ol>`);
+
+  const zsync = dialog.querySelector('[data-zsync]');
+  return {
+    ...downloadGuide(dialog),
+    // The release's .zsync, for AppImage updaters; optional for people.
+    setExtra: (url, name) => {
+      zsync.href = url;
+      zsync.removeAttribute('target');
+      dialog.querySelector('[data-zsync-name]').textContent = name;
+    },
+  };
+}
+
+// Step 1 of a desktop guide: its button turns into "Download again" once the
+// download has started, and points straight at the file once it's known.
+function downloadGuide(dialog) {
   const step1 = dialog.querySelector('[data-step="1"]');
-  const exe = dialog.querySelector('[data-exe]');
+  const file = dialog.querySelector('[data-file]');
   const status = dialog.querySelector('[data-download-status]');
   const setDownloading = (downloading) => {
     step1.classList.toggle('done', downloading);
-    exe.classList.toggle('btn-primary', !downloading);
-    exe.firstChild.textContent = downloading ? 'Download again ' : 'Download ';
+    file.classList.toggle('btn-primary', !downloading);
+    file.firstChild.textContent = downloading ? 'Download again ' : 'Download ';
     if (downloading) status.innerHTML = 'Your download has started. If it didn\'t, use the button below.';
   };
-  exe.addEventListener('click', () => setDownloading(true));
+  file.addEventListener('click', () => setDownloading(true));
 
   return {
-    // Once the release's .exe is known, the guide's button fetches it directly.
     setDownload: (url, name) => {
-      exe.href = url;
-      exe.removeAttribute('target');
-      dialog.querySelectorAll('[data-exe-name]').forEach((el) => { el.textContent = name; });
+      file.href = url;
+      file.removeAttribute('target');
+      dialog.querySelectorAll('[data-file-name]').forEach((el) => { el.textContent = name; });
     },
     open: (started) => {
       if (started) setDownloading(true);
       dialog.showModal();
-      exe.focus();
+      file.focus();
     },
   };
 }

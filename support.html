@@ -44,12 +44,46 @@
   <details><summary>How does Import from text work?</summary><p>In <i>Settings → Backup &amp; export → Import from text</i>, copy the instructions into any AI chat along with your notes. Paste the AI's answer back into Noggin. It builds a set and shows any line it couldn't read, with the line number. Check the content before you study from it.</p></details>
   <details><summary>I'm not getting reminders.</summary><p>Check that notifications are on for Noggin in your device settings. On Android 12 and later, also allow <i>Alarms &amp; reminders</i>. Some phones put apps to sleep to save battery. If yours does, turn battery optimisation off for Noggin.</p></details>
   <details><summary>Windows says the installer is from an unknown publisher.</summary><p>The installer isn't code-signed yet. If you downloaded it from the official link on this site, choose <i>More info → Run anyway</i>.</p></details>
+  <details><summary>The Linux AppImage won't open.</summary><p>First allow it to run: right-click the file, open <i>Properties → Permissions</i> and tick <i>Allow executing file as program</i>, or run <code>chmod +x Noggin-*.AppImage</code>. If it still doesn't start on Ubuntu or Mint, install FUSE 2 with <code>sudo apt install libfuse2</code> (on Ubuntu 24.04, <code>libfuse2t64</code>) and try again.</p></details>
+  <details><summary>How do I update Noggin on Linux?</summary><p>Put the new AppImage in the same folder as the old one and open it once; Noggin offers to take over your app menu entry and delete the old file. Gear Lever and AppImageUpdate can also update it in place. The full steps are in <a href="#updating-linux">Updating Noggin on Linux</a> below.</p></details>
+
+  <h2 id="updating-linux">Updating Noggin on Linux</h2>
+  <p>Your notes, quizzes and cards are kept in <code>~/.local/share/dev.landchit.noggin</code>, not in the AppImage, so updating only swaps the app file. The new version opens right where you left off. Pick one of these three ways.</p>
+
+  <h3>Download the new AppImage</h3>
+  <p>The simplest way, and it needs nothing else installed.</p>
+  <ol>
+    <li>Download the new AppImage with the <a href="index.html#download">Linux download button</a>.</li>
+    <li><b>Put it in the same folder as the old one</b>, for example <code>~/Applications</code>. There's no need to rename it: the version number in its name is fine. Keeping them together keeps your files tidy, and the old one is easy to find.</li>
+    <li>Allow it to run: right-click it, open <i>Properties → Permissions</i> and tick <i>Allow executing file as program</i>, or run <code>chmod +x Noggin-*.AppImage</code>.</li>
+    <li>Open it once from your file manager. If you added Noggin to your app menu with <i>Settings → Add to app launcher</i>, it asks <i>Use this version from your app menu?</i> Choose <b>Update and delete the old file</b>. Your app menu now opens the new version, and only one Noggin file is left.</li>
+  </ol>
+  <p>Didn't add Noggin to your app menu? Delete the old AppImage yourself once the new one opens. Chose <i>Not now</i> by mistake? Open the launcher page again (<i>Settings → Add to app launcher</i>) and create the entry from the new version.</p>
+
+  <h3>Update in place with Gear Lever</h3>
+  <p><a href="https://flathub.org/apps/it.mijorus.gearlever">Gear Lever</a> manages AppImages for you. It adds them to your app menu and updates them where they are, downloading only the parts that changed.</p>
+  <ol>
+    <li>Install it from Flathub, from your software centre or with <code>flatpak install flathub it.mijorus.gearlever</code>.</li>
+    <li>Open Noggin's AppImage with Gear Lever (or drag it onto Gear Lever's window) and add it to your app menu.</li>
+    <li>When a new version is out, open Gear Lever and use its update check on Noggin.</li>
+  </ol>
+  <p>Gear Lever puts Noggin in your app menu itself, so skip Noggin's own <i>Add to app launcher</i>, or Noggin shows up twice. If you already used it, delete <code>~/.local/share/applications/dev.landchit.noggin.desktop</code>.</p>
+
+  <h3>Update in place with AppImageUpdate</h3>
+  <p>For the terminal. <code>appimageupdatetool</code> also downloads only what changed.</p>
+  <ol>
+    <li>Download <code>appimageupdatetool-x86_64.AppImage</code> from <a href="https://github.com/AppImageCommunity/AppImageUpdate/releases">AppImageUpdate's releases</a> and allow it to run (<code>chmod +x appimageupdatetool-x86_64.AppImage</code>).</li>
+    <li>Point it at your Noggin, using the file's real path:<br><code>./appimageupdatetool-x86_64.AppImage --overwrite ~/Applications/Noggin-0.0.4-x86_64.AppImage</code></li>
+  </ol>
+  <p><code>--overwrite</code> updates the file where it is, so its name and your app menu entry stay the same. The name keeps the old version number; <i>Settings → About</i> shows the real one. Leave <code>--overwrite</code> out to get the new version as a separate file beside the old one, then open it once, as in the first way.</p>
+  <p>If Gear Lever or AppImageUpdate says there's no update, or can't check, download the new AppImage from this site instead.</p>
 
   <h2 id="delete">Deleting your data</h2>
   <p>Everything is on your device, and there's no account to close. To remove it all:</p>
   <ul>
     <li><b>Android:</b> <i>Settings → Apps → Noggin → Storage → Clear storage</i>, or uninstall Noggin.</li>
     <li><b>Windows:</b> uninstall from <i>Settings → Apps</i> and answer <i>Yes</i> to <i>Also delete your Noggin data?</i></li>
+    <li><b>Linux:</b> delete the AppImage and the <code>~/.local/share/dev.landchit.noggin</code> folder.</li>
   </ul>
   <p>More details are in the <a href="privacy.html#deleting-your-data">privacy policy</a>.</p>
 </article>
