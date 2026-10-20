@@ -293,3 +293,16 @@ details[open] summary { margin-bottom: 8px; }
 .whats-new[hidden] { display: none; }
 .whats-new h3 { margin: 0 0 10px; }
 .whats-new ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+
+/* Buy me a coffee: a yellow pill in the nav, a card on the home page */
+.nav-links a.nav-coffee { display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; background: var(--yellow); color: #2A2135; border: 2px solid var(--line); box-shadow: 2px 2px 0 var(--line); }
+.nav-links a.nav-coffee:hover { background: var(--yellow); color: #2A2135; }
+.nav-coffee svg { width: 18px; height: 18px; flex: none; }
+@media (max-width: 719px) { .nav-links a.nav-coffee { margin: 6px 0 0; } }
+.coffee { padding-bottom: 0; }
+.coffee-card { display: grid; gap: 24px; align-items: center; background: var(--sun); padding: 32px; }
+.coffee-card h2 { margin-top: 0; }
+.coffee-card .lede { color: var(--ink); opacity: .82; margin-bottom: 0; }
+@media (min-width: 860px) { .coffee-card { grid-template-columns: 1fr auto; padding: 40px 44px; } }
+.btn-coffee { background: var(--yellow); color: #2A2135; justify-self: start; }
+.btn-coffee:hover { color: #2A2135; }
