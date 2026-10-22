@@ -150,6 +150,32 @@ const ARROW_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
     whatsNew.hidden = false;
   }
 
+  // Scroll reveal. Only things that start below the fold are hidden, so
+  // nothing on screen at load blinks, and without JavaScript nothing is hidden
+  // at all. Once an item has arrived its `reveal` class goes, so hover lifts
+  // aren't held back by the reveal's transition delay.
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (window.IntersectionObserver && !reduceMotion) {
+    const items = Array.from(document.querySelectorAll(
+      '.section-head, .cards > *, .promise > li, .feature-list > li, .shots, .frow > *, .coffee-card, .cta .wrap > *'
+    )).filter((el) => el.getBoundingClientRect().top > window.innerHeight);
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        observer.unobserve(el);
+        el.classList.add('shown');
+        const delay = Number(el.style.getPropertyValue('--i') || 0) * 70;
+        setTimeout(() => el.classList.remove('reveal'), delay + 800);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    items.forEach((el) => {
+      el.style.setProperty('--i', String(Math.min(Array.from(el.parentElement.children).indexOf(el), 5)));
+      el.classList.add('reveal');
+      observer.observe(el);
+    });
+  }
+
   // Screenshot tabs
   const tabs = document.querySelectorAll('.tabs [role="tab"]');
   tabs.forEach((tab) => {
