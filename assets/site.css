@@ -181,8 +181,8 @@ section { padding: 72px 0; }
 /* Feature list */
 .feature-list { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); list-style: none; padding: 0; margin: 0; }
 .feature-list li { display: flex; gap: 14px; align-items: flex-start; background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 16px 18px; }
-.feature-list .ico { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; border: 2px solid var(--line); background: var(--c, var(--orange)); color: #2A2135; }
-.feature-list .ico svg { width: 22px; height: 22px; }
+.feature-list .ico, .card h3 .ico { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; border: 2px solid var(--line); background: var(--c, var(--orange)); color: #2A2135; }
+.feature-list .ico svg, .card h3 .ico svg { width: 22px; height: 22px; }
 .feature-list b { display: block; font-weight: 900; }
 .feature-list span { color: var(--muted); font-size: .95rem; }
 
@@ -344,7 +344,7 @@ details[open] summary { margin-bottom: 8px; }
 
   .pill .dot { transition: transform .2s cubic-bezier(.2, .9, .3, 1.6); }
   .pill:hover .dot { transform: scale(1.35); }
-  .feature-list li:hover .ico, .card:hover h3 .dot { animation: wiggle .5s ease-in-out; }
+  .feature-list li:hover .ico, .card:hover h3 :is(.dot, .ico) { animation: wiggle .5s ease-in-out; }
 
   /* Switching screenshot tabs slides the new set in. */
   .shots:not([hidden]) { animation: shots-in .4s cubic-bezier(.2, .9, .3, 1); }
